@@ -4,11 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
+import android.widget.ImageView;
 
 import java.net.URL;
 import java.util.ArrayList;
 
-public class ImageDownloadTask extends AsyncTask<String, Void, ArrayList<Bitmap>> {
+public class ImageDownloadTask extends AsyncTask<ArrayList<Pair<String, ImageView>>, Void, Integer> {
 
     @Override
     protected void onPreExecute() {
@@ -17,25 +19,26 @@ public class ImageDownloadTask extends AsyncTask<String, Void, ArrayList<Bitmap>
     }
 
     @Override
-    protected void onPostExecute(ArrayList<Bitmap> o) {
+    protected void onPostExecute(Integer o) {
         super.onPostExecute(o);
         Log.d("ImageDownloadTask", "Finished");
     }
 
     @Override
-    protected ArrayList<Bitmap> doInBackground(String ... objects) {
-        ArrayList<Bitmap> ret = new ArrayList<>();
-        for (String link: objects) {
-            try {
-                URL url = new URL(link);
-                Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                ret.add(bmp);
-            } catch (Exception ex) {
-                Log.e("ImageDownloadTask.java", ex.toString());
-                ret.add(null);
+    protected Integer doInBackground(ArrayList<Pair<String, ImageView>> ... input) {
+        Integer successfully = 0;
+        for (ArrayList<Pair<String, ImageView>> anInputArr : input) {
+            for(Pair<String, ImageView> anInput : anInputArr) {
+                try {
+                    URL url = new URL(anInput.first);
+                    Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                    anInput.second.setImageBitmap(bmp);
+                    ++successfully;
+                } catch (Exception ex) {
+                    Log.e("ImageDownloadTask", ex.toString());
+                }
             }
-
         }
-        return ret;
+        return successfully;
     }
 }
