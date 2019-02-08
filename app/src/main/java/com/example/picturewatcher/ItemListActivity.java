@@ -5,14 +5,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import com.example.picturewatcher.Content;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -31,6 +32,10 @@ public class ItemListActivity extends AppCompatActivity {
      * device.
      */
     private boolean mTwoPane;
+
+    private boolean mLoading = true;
+    private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +57,35 @@ public class ItemListActivity extends AppCompatActivity {
         View recyclerView = findViewById(R.id.item_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
+        setupRecyclerScrollListener((RecyclerView) recyclerView);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, com.example.picturewatcher.Content.ITEMS, mTwoPane));
+    }
+
+    private void setupRecyclerScrollListener(@NonNull RecyclerView recyclerView) {
+        mLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLayoutManager);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                //check for scroll down
+                if(dy > 0) {
+                    mVisibleItemCount = mLayoutManager.getChildCount();
+                    mTotalItemCount = mLayoutManager.getItemCount();
+                    mPastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+                    if (mLoading) {
+                        if ((mVisibleItemCount + mPastVisiblesItems) >= mTotalItemCount) {
+                            mLoading = false;
+                            //in down
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public static class SimpleItemRecyclerViewAdapter
