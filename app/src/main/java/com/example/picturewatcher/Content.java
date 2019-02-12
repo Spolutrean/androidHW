@@ -51,11 +51,13 @@ public class Content {
         public final String id;
         public final String content;
         public final String details;
+        public final ImageInformation imageInformation;
 
-        public Item(String id, String content, String details) {
+        public Item(String id, String content, String details, ImageInformation imageInformation) {
             this.id = id;
             this.content = content;
             this.details = details;
+            this.imageInformation = imageInformation;
         }
 
         @Override
