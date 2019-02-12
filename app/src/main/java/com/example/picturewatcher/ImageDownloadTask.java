@@ -7,10 +7,12 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.ImageView;
 
+import com.example.picturewatcher.Utils.Triple;
+
 import java.net.URL;
 import java.util.ArrayList;
 
-public class ImageDownloadTask extends AsyncTask<ArrayList<Pair<String, ImageView>>, Void, Integer> {
+public class ImageDownloadTask extends AsyncTask<Triple<String, Bitmap, ImageView>, Void, Triple<String, Bitmap, ImageView>> {
 
     @Override
     protected void onPreExecute() {
@@ -19,26 +21,22 @@ public class ImageDownloadTask extends AsyncTask<ArrayList<Pair<String, ImageVie
     }
 
     @Override
-    protected void onPostExecute(Integer o) {
-        super.onPostExecute(o);
+    protected void onPostExecute(Triple<String, Bitmap, ImageView> t) {
+        super.onPostExecute(t);
+        t.getThird().setImageBitmap(t.getSecond());
         Log.d("ImageDownloadTask", "Finished");
     }
 
     @Override
-    protected Integer doInBackground(ArrayList<Pair<String, ImageView>> ... input) {
-        Integer successfully = 0;
-        for (ArrayList<Pair<String, ImageView>> anInputArr : input) {
-            for(Pair<String, ImageView> anInput : anInputArr) {
-                try {
-                    URL url = new URL(anInput.first);
-                    Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                    anInput.second.setImageBitmap(bmp);
-                    ++successfully;
-                } catch (Exception ex) {
-                    Log.e("ImageDownloadTask", ex.toString());
-                }
-            }
+    protected Triple<String, Bitmap, ImageView> doInBackground(Triple<String, Bitmap, ImageView> ... input) {
+        try {
+            URL url = new URL(input[0].getFirst());
+            Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            input[0].setSecond(bmp);
+            return input[0];
+        } catch (Exception ex) {
+            Log.e("ImageDownloadTask", ex.toString());
+            return input[0];
         }
-        return successfully;
     }
 }

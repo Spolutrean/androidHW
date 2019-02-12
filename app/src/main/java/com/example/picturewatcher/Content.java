@@ -1,5 +1,8 @@
 package com.example.picturewatcher;
 
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,31 +20,21 @@ public class Content {
      */
     public static final Map<String, Item> ITEM_MAP = new HashMap<String, Item>();
 
-    private static final int COUNT = 1000;
-
-    static {
-        // Add some items.
-        for (int i = 1; i <= COUNT; i++) {
-            addItem(createItem(i));
-        }
-    }
-
     private static void addItem(Item item) {
         ITEMS.add(item);
         ITEM_MAP.put(item.id, item);
     }
 
-    private static Item createItem(int position) {
-        return new Item(String.valueOf(position), "Item " + position, makeDetails(position));
+    private static Item createItem(int position, ImageInformation info) {
+        return new Item(String.valueOf(position), info);
     }
 
-    private static String makeDetails(int position) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Details about Item: ").append(position);
-        for (int i = 0; i < position; i++) {
-            builder.append("\nMore details information here.");
-        }
-        return builder.toString();
+    private static String makeContent(ImageInformation info) {
+        return info.description;
+    }
+
+    private static String makeDetails(ImageInformation info) {
+        return info.description;
     }
 
     /**
@@ -52,12 +45,14 @@ public class Content {
         public final String content;
         public final String details;
         public final ImageInformation imageInformation;
+        public Bitmap image;
 
-        public Item(String id, String content, String details, ImageInformation imageInformation) {
+        public Item(String id, ImageInformation imageInformation) {
             this.id = id;
-            this.content = content;
-            this.details = details;
+            this.content = makeContent(imageInformation);
+            this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
+            this.image = null;
         }
 
         @Override

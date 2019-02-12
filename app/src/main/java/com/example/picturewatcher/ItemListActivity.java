@@ -2,18 +2,21 @@ package com.example.picturewatcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.example.picturewatcher.Utils.Triple;
 
 import java.util.List;
 
@@ -133,9 +136,27 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mContentView.setText(mValues.get(position).content);
+            Content.Item item = mValues.get(position);
 
-            holder.itemView.setTag(mValues.get(position));
+            holder.mContentTextView.setText(item.content);
+            holder.mContentTextView.setBackgroundColor(Color.parseColor(item.imageInformation.color));
+
+            if(item.image != null) {
+                holder.mConentImageView.setImageBitmap(item.image);
+            } else {
+                holder.mConentImageView.setImageBitmap(Bitmap.createBitmap(
+                    200,
+                    400,
+                    Bitmap.Config.valueOf(item.imageInformation.color)));
+
+                new ImageDownloadTask().execute(new Triple<>(
+                        item.imageInformation.rawUrl,
+                        item.image,
+                        holder.mConentImageView
+                ));
+            }
+
+            holder.itemView.setTag(item);
             holder.itemView.setOnClickListener(mOnClickListener);
         }
 
@@ -145,11 +166,13 @@ public class ItemListActivity extends AppCompatActivity {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView mContentView;
+            final TextView mContentTextView;
+            final ImageView mConentImageView;
 
             ViewHolder(View view) {
                 super(view);
-                mContentView = (TextView) view.findViewById(R.id.content);
+                mContentTextView = (TextView) view.findViewById(R.id.content);
+                mConentImageView = (ImageView) view.findViewById(R.id.contentImage);
             }
         }
     }
