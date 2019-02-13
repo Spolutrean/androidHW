@@ -20,12 +20,12 @@ public class Content {
      */
     public static final Map<String, Item> ITEM_MAP = new HashMap<String, Item>();
 
-    private static void addItem(Item item) {
+    public static void addItem(Item item) {
         ITEMS.add(item);
         ITEM_MAP.put(item.id, item);
     }
 
-    private static Item createItem(int position, ImageInformation info) {
+    public static Item createItem(int position, ImageInformation info) {
         return new Item(String.valueOf(position), info);
     }
 

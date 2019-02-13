@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.picturewatcher.Utils.Triple;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -61,6 +65,9 @@ public class ItemListActivity extends AppCompatActivity {
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
         setupRecyclerScrollListener((RecyclerView) recyclerView);
+
+
+        createAndAddNewItems(Constants.ITEMS_PER_PAGE, 1);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -83,12 +90,56 @@ public class ItemListActivity extends AppCompatActivity {
                     if (mLoading) {
                         if ((mVisibleItemCount + mPastVisiblesItems) >= mTotalItemCount) {
                             mLoading = false;
-                            //in down
+                            createAndAddNewItems(Constants.ITEMS_PER_PAGE, 1);
                         }
                     }
                 }
             }
         });
+    }
+
+    private abstract class UriLoadRunnable implements Runnable {
+        public String link;
+
+        public UriLoadRunnable(String link) {
+            this.link = link;
+        }
+    }
+
+    private abstract class AddItemsRunnable implements Runnable {
+        public AddItemsRunnable(List<ImageInformation> items) {
+            this.items = items;
+        }
+
+        public List<ImageInformation> items;
+    }
+
+    private void createAndAddNewItems(Integer itemsPerPage, Integer pageNumber) {
+
+        final String apiLink = Constants.UNSPLASH_API_URL + "/photos/" +
+                "?client_id=" + Constants.ACCESS_KEY +
+                "&page=" + pageNumber.toString() +
+                "&per_page=" + itemsPerPage.toString();
+
+        new Thread(new UriLoadRunnable(apiLink) {
+            @Override
+            public void run() {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<ImageInformation> items = mapper.readValue(new URL(link), new TypeReference<List<ImageInformation>>(){});
+                    runOnUiThread(new AddItemsRunnable(items) {
+                        @Override
+                        public void run() {
+                            for(ImageInformation item : items) {
+                                Content.addItem(Content.createItem(Content.ITEMS.size(), item));
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(Constants.LOG_TAG, e.toString());
+                }
+            }
+        }).start();
     }
 
     public static class SimpleItemRecyclerViewAdapter
@@ -142,17 +193,17 @@ public class ItemListActivity extends AppCompatActivity {
             holder.mContentTextView.setBackgroundColor(Color.parseColor(item.imageInformation.color));
 
             if(item.image != null) {
-                holder.mConentImageView.setImageBitmap(item.image);
+                holder.mContentImageView.setImageBitmap(item.image);
             } else {
-                holder.mConentImageView.setImageBitmap(Bitmap.createBitmap(
-                    200,
-                    400,
+                holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(
+                    Constants.MEDIUM_IMAGE_W,
+                    Constants.MEDIUM_IMAGE_H,
                     Bitmap.Config.valueOf(item.imageInformation.color)));
 
                 new ImageDownloadTask().execute(new Triple<>(
-                        item.imageInformation.rawUrl,
+                        item.imageInformation.urls.raw,
                         item.image,
-                        holder.mConentImageView
+                        holder.mContentImageView
                 ));
             }
 
@@ -167,12 +218,12 @@ public class ItemListActivity extends AppCompatActivity {
 
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView mContentTextView;
-            final ImageView mConentImageView;
+            final ImageView mContentImageView;
 
             ViewHolder(View view) {
                 super(view);
                 mContentTextView = (TextView) view.findViewById(R.id.content);
-                mConentImageView = (ImageView) view.findViewById(R.id.contentImage);
+                mContentImageView = (ImageView) view.findViewById(R.id.contentImage);
             }
         }
     }
