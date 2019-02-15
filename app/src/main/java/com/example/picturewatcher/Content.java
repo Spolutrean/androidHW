@@ -1,6 +1,8 @@
 package com.example.picturewatcher;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
 
 import java.util.ArrayList;
@@ -25,16 +27,24 @@ public class Content {
         ITEM_MAP.put(item.id, item);
     }
 
-    public static Item createItem(int position, ImageInformation info) {
-        return new Item(String.valueOf(position), info);
+    public static Item createItem(ImageInformation info) {
+        return new Item(String.valueOf(ITEMS.size()), info);
     }
 
     private static String makeContent(ImageInformation info) {
-        return info.description;
+        if(info.description != null) {
+            return info.description;
+        } else {
+            return "Empty description";
+        }
     }
 
     private static String makeDetails(ImageInformation info) {
-        return info.description;
+        if(info.description != null) {
+            return info.description;
+        } else {
+            return "Empty description";
+        }
     }
 
     /**
@@ -49,8 +59,8 @@ public class Content {
 
         public Item(String id, ImageInformation imageInformation) {
             this.id = id;
-            this.content = makeContent(imageInformation);
-            this.details = makeDetails(imageInformation);
+            this.content = id + " " + makeContent(imageInformation);
+            this.details = id + " " + makeDetails(imageInformation);
             this.imageInformation = imageInformation;
             this.image = null;
         }

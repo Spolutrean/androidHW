@@ -43,6 +43,7 @@ public class ItemListActivity extends AppCompatActivity {
     private boolean mLoading = true;
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
     private LinearLayoutManager mLayoutManager;
+    private SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +72,8 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, com.example.picturewatcher.Content.ITEMS, mTwoPane));
+        mSimpleItemRecyclerViewAdapter = new SimpleItemRecyclerViewAdapter(this, com.example.picturewatcher.Content.ITEMS, mTwoPane);
+        recyclerView.setAdapter(mSimpleItemRecyclerViewAdapter);
     }
 
     private void setupRecyclerScrollListener(@NonNull RecyclerView recyclerView) {
@@ -131,8 +133,9 @@ public class ItemListActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             for(ImageInformation item : items) {
-                                Content.addItem(Content.createItem(Content.ITEMS.size(), item));
+                                Content.addItem(Content.createItem(item));
                             }
+                            mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
                         }
                     });
                 } catch (Exception e) {
@@ -190,18 +193,12 @@ public class ItemListActivity extends AppCompatActivity {
             Content.Item item = mValues.get(position);
 
             holder.mContentTextView.setText(item.content);
-            holder.mContentTextView.setBackgroundColor(Color.parseColor(item.imageInformation.color));
 
             if(item.image != null) {
                 holder.mContentImageView.setImageBitmap(item.image);
             } else {
-                holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(
-                    Constants.MEDIUM_IMAGE_W,
-                    Constants.MEDIUM_IMAGE_H,
-                    Bitmap.Config.valueOf(item.imageInformation.color)));
-
                 new ImageDownloadTask().execute(new Triple<>(
-                        item.imageInformation.urls.raw,
+                        item.imageInformation.urls.raw + "&h=" + Constants.MEDIUM_IMAGE_H,
                         item.image,
                         holder.mContentImageView
                 ));
