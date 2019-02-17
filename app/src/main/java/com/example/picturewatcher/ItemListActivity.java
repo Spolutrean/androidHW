@@ -2,8 +2,6 @@ package com.example.picturewatcher;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.picturewatcher.Utils.Triple;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,7 +37,7 @@ public class ItemListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
 
-    private boolean mLoading = true;
+    private boolean mLoading = false;
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
     private LinearLayoutManager mLayoutManager;
     private SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
@@ -89,9 +86,9 @@ public class ItemListActivity extends AppCompatActivity {
                     mTotalItemCount = mLayoutManager.getItemCount();
                     mPastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
-                    if (mLoading) {
+                    if (!mLoading) {
                         if ((mVisibleItemCount + mPastVisiblesItems) >= mTotalItemCount) {
-                            mLoading = false;
+                            mLoading = true;
                             createAndAddNewItems(Constants.ITEMS_PER_PAGE, 1);
                         }
                     }
@@ -108,12 +105,14 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
-    private abstract class AddItemsRunnable implements Runnable {
-        public AddItemsRunnable(List<ImageInformation> items) {
-            this.items = items;
-        }
+    private abstract  class RunnableWithItemAndId implements  Runnable {
+        public ImageInformation item;
+        public Integer id;
 
-        public List<ImageInformation> items;
+        public RunnableWithItemAndId(Integer id, ImageInformation item) {
+            this.item = item;
+            this.id = id;
+        }
     }
 
     private void createAndAddNewItems(Integer itemsPerPage, Integer pageNumber) {
@@ -128,16 +127,26 @@ public class ItemListActivity extends AppCompatActivity {
             public void run() {
                 try {
                     ObjectMapper mapper = new ObjectMapper();
-                    List<ImageInformation> items = mapper.readValue(new URL(link), new TypeReference<List<ImageInformation>>(){});
-                    runOnUiThread(new AddItemsRunnable(items) {
-                        @Override
-                        public void run() {
-                            for(ImageInformation item : items) {
-                                Content.addItem(Content.createItem(item));
+                    List<ImageInformation> items = mapper.readValue(
+                            new URL(link),
+                            new TypeReference<List<ImageInformation>>(){});
+
+                    for(int i = 0; i < items.size(); ++i) {
+                        ImageInformation item = items.get(i);
+                        new Thread(new RunnableWithItemAndId(i, item) {
+                            @Override
+                            public void run() {
+                                Content.addItem(Content.createItem(id, item));
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
+                                        mLoading = false;
+                                    }
+                                });
                             }
-                            mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
-                        }
-                    });
+                        }).start();
+                    }
                 } catch (Exception e) {
                     Log.e(Constants.LOG_TAG, e.toString());
                 }
@@ -193,16 +202,7 @@ public class ItemListActivity extends AppCompatActivity {
             Content.Item item = mValues.get(position);
 
             holder.mContentTextView.setText(item.content);
-
-            if(item.image != null) {
-                holder.mContentImageView.setImageBitmap(item.image);
-            } else {
-                new ImageDownloadTask().execute(new Triple<>(
-                        item.imageInformation.urls.raw + "&h=" + Constants.MEDIUM_IMAGE_H,
-                        item.image,
-                        holder.mContentImageView
-                ));
-            }
+            holder.mContentImageView.setImageBitmap(item.image);
 
             holder.itemView.setTag(item);
             holder.itemView.setOnClickListener(mOnClickListener);
