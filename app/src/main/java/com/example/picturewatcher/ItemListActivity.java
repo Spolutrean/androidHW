@@ -43,7 +43,6 @@ public class ItemListActivity extends AppCompatActivity {
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
     private LinearLayoutManager mLayoutManager;
     private SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
-    private int pageLoaded = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,12 +115,11 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
-    private void createAndAddNewItems(Integer itemsPerPage) {
+    private void createAndAddNewItems(Integer count) {
 
-        final String apiLink = Constants.UNSPLASH_API_URL + "/photos/" +
+        final String apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
                 "?client_id=" + Constants.ACCESS_KEY +
-                "&page=" + (pageLoaded++) +
-                "&per_page=" + itemsPerPage.toString();
+                "&count=" + count.toString();
 
         new Thread(new UriLoadRunnable(apiLink) {
             @Override
