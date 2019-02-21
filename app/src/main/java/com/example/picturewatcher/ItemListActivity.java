@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -109,13 +108,11 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
-    private abstract  class RunnableWithItemAndId implements  Runnable {
+    private abstract  class RunnableWithItem implements  Runnable {
         public ImageInformation item;
-        public Integer id;
 
-        public RunnableWithItemAndId(Integer id, ImageInformation item) {
+        public RunnableWithItem(ImageInformation item) {
             this.item = item;
-            this.id = id;
         }
     }
 
@@ -135,12 +132,11 @@ public class ItemListActivity extends AppCompatActivity {
                             new URL(link),
                             new TypeReference<List<ImageInformation>>(){});
 
-                    for(int i = 0; i < items.size(); ++i) {
-                        ImageInformation item = items.get(i);
-                        new Thread(new RunnableWithItemAndId(i, item) {
+                    for(ImageInformation item : items) {
+                        new Thread(new RunnableWithItem(item) {
                             @Override
                             public void run() {
-                                Content.addItem(Content.createItem(id, item));
+                                Content.addItem(Content.createItem(item));
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -170,7 +166,7 @@ public class ItemListActivity extends AppCompatActivity {
                 Content.Item item = (Content.Item) view.getTag();
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
-                    arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.id);
+                    arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
                     ItemDetailFragment fragment = new ItemDetailFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
@@ -179,7 +175,7 @@ public class ItemListActivity extends AppCompatActivity {
                 } else {
                     Context context = view.getContext();
                     Intent intent = new Intent(context, ItemDetailActivity.class);
-                    intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, item.id);
+                    intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
 
                     context.startActivity(intent);
                 }

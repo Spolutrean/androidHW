@@ -27,11 +27,11 @@ public class Content {
 
     public static void addItem(Item item) {
         ITEMS.add(item);
-        ITEM_MAP.put(item.id, item);
+        ITEM_MAP.put(item.imageInformation.id, item);
     }
 
-    public static Item createItem(int id, ImageInformation info) {
-        return new Item(Integer.toString(id + ITEMS.size()), info);
+    public static Item createItem(ImageInformation info) {
+        return new Item(info);
     }
 
     private static String makeContent(ImageInformation info) {
@@ -54,7 +54,6 @@ public class Content {
      * A item representing a piece of content.
      */
     public static class Item {
-        public final String id;
         public final String content;
         public final String details;
         public final ImageInformation imageInformation;
@@ -90,10 +89,9 @@ public class Content {
             return String.format("#%02x%02x%02x%02x", 128, red / pixelCount, green/pixelCount, blue / pixelCount);
         }
 
-        public Item(String id, ImageInformation imageInformation) {
-            this.id = id;
-            this.content = id + " " + makeContent(imageInformation);
-            this.details = id + " " + makeDetails(imageInformation);
+        public Item(ImageInformation imageInformation) {
+            this.content = makeContent(imageInformation);
+            this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
             this.image = LoadImage(imageInformation.urls.raw + "&w=" + Constants.MEDIUM_IMAGE_W);
             this.imageInformation.color = getAverageColor(this.image);
