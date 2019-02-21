@@ -2,9 +2,11 @@ package com.example.picturewatcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -13,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -41,6 +44,7 @@ public class ItemListActivity extends AppCompatActivity {
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
     private LinearLayoutManager mLayoutManager;
     private SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
+    private int pageLoaded = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +69,7 @@ public class ItemListActivity extends AppCompatActivity {
         setupRecyclerScrollListener((RecyclerView) recyclerView);
 
 
-        createAndAddNewItems(Constants.ITEMS_PER_PAGE, 1);
+        createAndAddNewItems(Constants.ITEMS_PER_PAGE);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -89,7 +93,7 @@ public class ItemListActivity extends AppCompatActivity {
                     if (!mLoading) {
                         if ((mVisibleItemCount + mPastVisiblesItems) >= mTotalItemCount) {
                             mLoading = true;
-                            createAndAddNewItems(Constants.ITEMS_PER_PAGE, 1);
+                            createAndAddNewItems(Constants.ITEMS_PER_PAGE);
                         }
                     }
                 }
@@ -115,11 +119,11 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
-    private void createAndAddNewItems(Integer itemsPerPage, Integer pageNumber) {
+    private void createAndAddNewItems(Integer itemsPerPage) {
 
         final String apiLink = Constants.UNSPLASH_API_URL + "/photos/" +
                 "?client_id=" + Constants.ACCESS_KEY +
-                "&page=" + pageNumber.toString() +
+                "&page=" + (pageLoaded++) +
                 "&per_page=" + itemsPerPage.toString();
 
         new Thread(new UriLoadRunnable(apiLink) {
@@ -201,6 +205,8 @@ public class ItemListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             Content.Item item = mValues.get(position);
 
+            holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
+
             holder.mContentTextView.setText(item.content);
             holder.mContentImageView.setImageBitmap(item.image);
 
@@ -216,11 +222,13 @@ public class ItemListActivity extends AppCompatActivity {
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView mContentTextView;
             final ImageView mContentImageView;
+            final LinearLayout mItemLayout;
 
             ViewHolder(View view) {
                 super(view);
                 mContentTextView = (TextView) view.findViewById(R.id.content);
                 mContentImageView = (ImageView) view.findViewById(R.id.contentImage);
+                mItemLayout = (LinearLayout) view.findViewById(R.id.itemLayout);
             }
         }
     }

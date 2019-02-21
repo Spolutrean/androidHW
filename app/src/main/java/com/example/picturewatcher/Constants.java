@@ -3,7 +3,7 @@ package com.example.picturewatcher;
 public final class Constants {
     public static final Integer ITEMS_PER_PAGE = 5;
 
-    public static final Integer MEDIUM_IMAGE_W = 1200, MEDIUM_IMAGE_H = 900;
+    public static final Integer MEDIUM_IMAGE_W = 500, MEDIUM_IMAGE_H = 900;
 
     public static final String
             ACCESS_KEY = "c65614934e9e6928ddf4baaf55cefa6dd50375640bcd607a3660147c0179af10",
