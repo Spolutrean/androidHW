@@ -37,7 +37,7 @@ public class ItemListActivity extends AppCompatActivity {
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
-    private boolean mTwoPane;
+    private boolean mTwoPane = false;
 
     private boolean mLoading = false;
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
@@ -53,7 +53,7 @@ public class ItemListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        if (findViewById(R.id.item_detail_container) != null) {
+        if (findViewById(R.id.item_detail_container_horizontal) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
             // If this view is present, then the
@@ -168,14 +168,20 @@ public class ItemListActivity extends AppCompatActivity {
                     ItemDetailFragment fragment = new ItemDetailFragment();
                     fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.item_detail_container, fragment)
+                            .replace(R.id.item_detail_container_horizontal, fragment)
                             .commit();
-                } else {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, ItemDetailActivity.class);
-                    intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
 
-                    context.startActivity(intent);
+
+                } else {
+                    Bundle arguments = new Bundle();
+                    arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
+                    ItemDetailFragment fragment = new ItemDetailFragment();
+                    fragment.setArguments(arguments);
+                    mParentActivity.getSupportFragmentManager().beginTransaction()
+                            .add(R.id.frameLayout, fragment)
+                            .addToBackStack(null)
+                            .commit();
+
                 }
             }
         };

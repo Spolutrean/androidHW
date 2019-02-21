@@ -15,7 +15,6 @@ import com.example.picturewatcher.Content;
 /**
  * A fragment representing a single Item detail screen.
  * This fragment is either contained in a {@link ItemListActivity}
- * in two-pane mode (on tablets) or a {@link ItemDetailActivity}
  * on handsets.
  */
 public class ItemDetailFragment extends Fragment {
@@ -52,11 +51,12 @@ public class ItemDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.item_detail, container, false);
+        View rootView = inflater.inflate(R.layout.item_detail, null);
 
         if (mItem != null) {
             ((TextView) rootView.findViewById(R.id.item_detail)).setText(mItem.details);
             ((ImageView) rootView.findViewById(R.id.item_detail_image)).setImageBitmap(mItem.image);
+            rootView.findViewById(R.id.item_detail_layout).setBackgroundColor(Color.parseColor(mItem.imageInformation.color));
         }
 
         return rootView;
