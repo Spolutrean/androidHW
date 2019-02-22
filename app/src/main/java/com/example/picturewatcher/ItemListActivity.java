@@ -162,21 +162,17 @@ public class ItemListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Content.Item item = (Content.Item) view.getTag();
+                Bundle arguments = new Bundle();
+                arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
+                ItemDetailFragment fragment = new ItemDetailFragment();
+                fragment.setArguments(arguments);
                 if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
-                    ItemDetailFragment fragment = new ItemDetailFragment();
-                    fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
                             .replace(R.id.item_detail_container_horizontal, fragment)
                             .commit();
 
 
                 } else {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(ItemDetailFragment.ARG_ITEM_ID, item.imageInformation.id);
-                    ItemDetailFragment fragment = new ItemDetailFragment();
-                    fragment.setArguments(arguments);
                     mParentActivity.getSupportFragmentManager().beginTransaction()
                             .add(R.id.frameLayout, fragment)
                             .addToBackStack(null)
