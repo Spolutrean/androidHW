@@ -207,7 +207,6 @@ public class ItemListActivity extends AppCompatActivity {
 
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
 
-            holder.mContentTextView.setText(item.content);
             holder.mContentImageView.setImageBitmap(item.image);
 
             holder.itemView.setTag(item);
@@ -220,13 +219,11 @@ public class ItemListActivity extends AppCompatActivity {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView mContentTextView;
             final ImageView mContentImageView;
             final LinearLayout mItemLayout;
 
             ViewHolder(View view) {
                 super(view);
-                mContentTextView = (TextView) view.findViewById(R.id.content);
                 mContentImageView = (ImageView) view.findViewById(R.id.contentImage);
                 mItemLayout = (LinearLayout) view.findViewById(R.id.itemLayout);
             }
