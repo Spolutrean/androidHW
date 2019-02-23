@@ -3,7 +3,6 @@ package com.example.picturewatcher;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.ColorSpace;
 import android.util.Log;
 
 import java.net.URL;
@@ -50,6 +49,17 @@ public class Content {
         }
     }
 
+    public static Bitmap LoadImage(String link) {
+        try {
+            java.net.URL url = new URL(link);
+            Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            return bmp;
+        } catch (Exception ex) {
+            Log.e(Constants.LOG_TAG, ex.toString());
+            return null;
+        }
+    }
+
     /**
      * A item representing a piece of content.
      */
@@ -58,17 +68,6 @@ public class Content {
         public final String details;
         public final ImageInformation imageInformation;
         public Bitmap image;
-
-        private Bitmap LoadImage(String link) {
-            try {
-                java.net.URL url = new URL(link);
-                Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                return bmp;
-            } catch (Exception ex) {
-                Log.e(Constants.LOG_TAG, ex.toString());
-                return null;
-            }
-        }
 
         private String getAverageColor(Bitmap bitmap) {
             int red = 0, green = 0, blue = 0, pixelCount = 0;
@@ -93,7 +92,7 @@ public class Content {
             this.content = makeContent(imageInformation);
             this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
-            this.image = LoadImage(imageInformation.urls.raw + "&w=" + Constants.MEDIUM_IMAGE_W);
+            this.image = LoadImage(imageInformation.urls.raw + "&w=" + Constants.SMALL_IMAGE_W + "&dpi=1");
             this.imageInformation.color = getAverageColor(this.image);
         }
 

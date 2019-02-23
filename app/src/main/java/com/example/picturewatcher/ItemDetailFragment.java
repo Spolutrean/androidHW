@@ -7,10 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.example.picturewatcher.Content;
 
 /**
  * A fragment representing a single Item detail screen.
@@ -48,6 +45,8 @@ public class ItemDetailFragment extends Fragment {
         }
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -55,7 +54,10 @@ public class ItemDetailFragment extends Fragment {
 
         if (mItem != null) {
             ((TextView) rootView.findViewById(R.id.item_detail)).setText(mItem.details);
-            ((ImageView) rootView.findViewById(R.id.item_detail_image)).setImageBitmap(mItem.image);
+
+            new AsyncTaskLoadImage(((ImageView) rootView.findViewById(R.id.item_detail_image)))
+                    .execute(mItem.imageInformation.urls.raw + "&w="+ Constants.MEDIUM_IMAGE_W + "&dpi=1");
+
             rootView.findViewById(R.id.item_detail_layout).setBackgroundColor(Color.parseColor(mItem.imageInformation.color));
         }
 
