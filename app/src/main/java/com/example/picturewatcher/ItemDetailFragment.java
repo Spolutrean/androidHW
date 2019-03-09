@@ -56,7 +56,7 @@ public class ItemDetailFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.item_detail)).setText(mItem.details);
 
             new AsyncTaskLoadImage(((ImageView) rootView.findViewById(R.id.item_detail_image)))
-                    .execute(mItem.imageInformation.urls.raw + "&w="+ Constants.MEDIUM_IMAGE_W + "&dpi=1");
+                    .execute(mItem.imageInformation.id,  Constants.MEDIUM_IMAGE_H.toString(), Constants.MEDIUM_IMAGE_W.toString());
 
             rootView.findViewById(R.id.item_detail_layout).setBackgroundColor(Color.parseColor(mItem.imageInformation.color));
         }

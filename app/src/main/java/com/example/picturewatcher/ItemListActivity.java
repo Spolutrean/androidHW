@@ -2,6 +2,7 @@ package com.example.picturewatcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,14 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URL;
 import java.util.List;
 
-/**
- * An activity representing a list of Items. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link ItemDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- */
 public class ItemListActivity extends AppCompatActivity {
 
     /**
@@ -65,6 +58,7 @@ public class ItemListActivity extends AppCompatActivity {
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
         setupRecyclerScrollListener((RecyclerView) recyclerView);
+        Constants.PATH_FOR_LOADED_FILES = getFilesDir().getAbsolutePath();
 
 
         createAndAddNewItems(Constants.ITEMS_PER_PAGE);
@@ -202,8 +196,10 @@ public class ItemListActivity extends AppCompatActivity {
             Content.Item item = mValues.get(position);
 
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
+            holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(Constants.SMALL_IMAGE_W, Constants.SMALL_IMAGE_H, Bitmap.Config.RGB_565));
 
-            holder.mContentImageView.setImageBitmap(item.image);
+            new AsyncTaskLoadImage(holder.mContentImageView)
+                    .execute(item.imageInformation.id, Constants.SMALL_IMAGE_H.toString(), Constants.SMALL_IMAGE_W.toString());
 
             holder.itemView.setTag(item);
             holder.itemView.setOnClickListener(mOnClickListener);

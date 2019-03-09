@@ -13,7 +13,7 @@ public class AsyncTaskLoadImage  extends AsyncTask<String, String, Bitmap> {
     }
     @Override
     protected Bitmap doInBackground(String... params) {
-       return Content.LoadImage(params[0]);
+       return Content.getPicture(params[0], params[1], params[2]);
     }
     @Override
     protected void onPostExecute(Bitmap bitmap) {
