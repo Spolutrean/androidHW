@@ -1,10 +1,10 @@
 package com.example.picturewatcher;
 
 public final class Constants {
-    public static final Integer ITEMS_PER_PAGE = 10;
+    public static final Integer ITEMS_PER_PAGE = 25;
 
 
-    public static final Integer SMALL_IMAGE_W = 700, SMALL_IMAGE_H = 700;
+    public static final Integer SMALL_IMAGE_W = 450, SMALL_IMAGE_H = 500;
     public static final Integer MEDIUM_IMAGE_W = 1000, MEDIUM_IMAGE_H = 1000;
 
     public static final String

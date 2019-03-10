@@ -108,13 +108,11 @@ public class Content {
         if(lruCache.get(fileName) == null) {
             Bitmap image = checkInternalStorage(fileName);
             if(image == null) {
-                image = loadImage(ITEM_MAP.get(id).imageInformation.urls.raw + "&w=" + sizeW + "&h=" + sizeH + "&orientation=portrait&auto=format&cs=tinysrgb&fit=crop&crop=faces&q=0&dpr=1");
-                if (image != null) {
+                image = loadImage(ITEM_MAP.get(id).imageInformation.urls.raw + "&h=" + sizeH);
+                if (image != null && sizeH.equals(Constants.SMALL_IMAGE_H.toString())) {
                     lruCache.put(fileName, image);
                 }
-                if(Math.max(image.getHeight(), image.getWidth()) <= 500) {
-                    loadToInternalStorage(fileName, image);
-                }
+                loadToInternalStorage(fileName, image);
                 return image;
             } else {
                 return image;

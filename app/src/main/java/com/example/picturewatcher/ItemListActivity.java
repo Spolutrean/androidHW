@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ItemListActivity extends AppCompatActivity {
 
@@ -132,7 +134,7 @@ public class ItemListActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
+                                        mSimpleItemRecyclerViewAdapter.notifyItemInserted(mSimpleItemRecyclerViewAdapter.getItemCount() - 1);
                                         mLoading = false;
                                     }
                                 });
@@ -193,6 +195,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
+            holder.setIsRecyclable(false);
             Content.Item item = mValues.get(position);
 
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
