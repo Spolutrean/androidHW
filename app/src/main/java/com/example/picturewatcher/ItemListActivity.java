@@ -1,5 +1,6 @@
 package com.example.picturewatcher;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,32 +29,25 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ItemListActivity extends AppCompatActivity {
-
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
     private boolean mTwoPane = false;
 
-    private boolean mLoading = false;
+    private static boolean mLoading = false;
     private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
     private LinearLayoutManager mLayoutManager;
-    private SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
+    private static SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
+    private static Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_list);
+        context = this;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
         if (findViewById(R.id.item_detail_container_horizontal) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
             mTwoPane = true;
         }
 
@@ -60,7 +55,6 @@ public class ItemListActivity extends AppCompatActivity {
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
         setupRecyclerScrollListener((RecyclerView) recyclerView);
-        Constants.PATH_FOR_LOADED_FILES = getFilesDir().getAbsolutePath();
 
 
         createAndAddNewItems(Constants.ITEMS_PER_PAGE);
@@ -69,6 +63,17 @@ public class ItemListActivity extends AppCompatActivity {
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         mSimpleItemRecyclerViewAdapter = new SimpleItemRecyclerViewAdapter(this, com.example.picturewatcher.Content.ITEMS, mTwoPane);
         recyclerView.setAdapter(mSimpleItemRecyclerViewAdapter);
+    }
+
+    public static void addNewRecyclerItem(Content.Item item) {
+        Content.addItem(item);
+        ((Activity)context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mSimpleItemRecyclerViewAdapter.notifyItemInserted(Content.ITEMS.size() - 1);
+                mLoading = false;
+            }
+        });
     }
 
     private void setupRecyclerScrollListener(@NonNull RecyclerView recyclerView) {
@@ -126,21 +131,8 @@ public class ItemListActivity extends AppCompatActivity {
                             new URL(link),
                             new TypeReference<List<ImageInformation>>(){});
 
-                    for(ImageInformation item : items) {
-                        new Thread(new RunnableWithItem(item) {
-                            @Override
-                            public void run() {
-                                Content.addItem(Content.createItem(item));
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mSimpleItemRecyclerViewAdapter.notifyItemInserted(mSimpleItemRecyclerViewAdapter.getItemCount() - 1);
-                                        mLoading = false;
-                                    }
-                                });
-                            }
-                        }).start();
-                    }
+                    DownloadImageService.startLoading(getApplicationContext(), items);
+
                 } catch (Exception e) {
                     Log.e(Constants.LOG_TAG, e.toString());
                 }
@@ -152,8 +144,8 @@ public class ItemListActivity extends AppCompatActivity {
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final ItemListActivity mParentActivity;
-        private final List<Content.Item> mValues;
         private final boolean mTwoPane;
+
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -181,7 +173,6 @@ public class ItemListActivity extends AppCompatActivity {
         SimpleItemRecyclerViewAdapter(ItemListActivity parent,
                                       List<Content.Item> items,
                                       boolean twoPane) {
-            mValues = items;
             mParentActivity = parent;
             mTwoPane = twoPane;
         }
@@ -193,16 +184,33 @@ public class ItemListActivity extends AppCompatActivity {
             return new ViewHolder(view);
         }
 
+        ThreadPoolExecutor ex = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.setIsRecyclable(false);
-            Content.Item item = mValues.get(position);
+            final Content.Item item = Content.ITEMS.get(position);
 
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
-            holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(Constants.SMALL_IMAGE_W, Constants.SMALL_IMAGE_H, Bitmap.Config.RGB_565));
+            holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(500, 500, Bitmap.Config.RGB_565));
 
-            new AsyncTaskLoadImage(holder.mContentImageView)
-                    .execute(item.imageInformation.id, Constants.SMALL_IMAGE_H.toString(), Constants.SMALL_IMAGE_W.toString());
+            if(Content.lruCache.get(item.imageInformation.id) != null) {
+                holder.mContentImageView.setImageBitmap(Content.lruCache.get(item.imageInformation.id));
+            } else {
+                ex.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Bitmap bitmap = Content.checkInternalStorage(item.smallPicturePath);
+                        Content.lruCache.put(item.imageInformation.id, bitmap);
+                        mParentActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.mContentImageView.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                });
+            }
 
             holder.itemView.setTag(item);
             holder.itemView.setOnClickListener(mOnClickListener);
@@ -210,7 +218,7 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mValues.size();
+            return Content.ITEMS.size();
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

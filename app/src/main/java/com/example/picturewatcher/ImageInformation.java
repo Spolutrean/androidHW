@@ -1,8 +1,10 @@
 package com.example.picturewatcher;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-class ImageInformation {
+class ImageInformation implements Serializable {
     public String id;
     public String description;
     public String instagram_username = null;
@@ -13,7 +15,8 @@ class ImageInformation {
 
     public ImageInformation() { }
 
-    public class Urls {
+
+    public class Urls implements Serializable {
         public String raw, full, regular, small, thumb;
     }
 

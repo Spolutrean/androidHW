@@ -33,7 +33,7 @@ public class Content {
     /**
      * Size for lru cache.
      */
-    public static final int cacheSize = (int) ((Runtime.getRuntime().maxMemory() / 1024) / 4);
+    public static final int cacheSize = (int) ((Runtime.getRuntime().maxMemory()) / 4);
 
     /**
      * LRU cache for loaded images.
@@ -80,8 +80,8 @@ public class Content {
         }
     }
 
-    private static Bitmap checkInternalStorage(String fileName) {
-        File imgFile = new File(Constants.PATH_FOR_LOADED_FILES + File.separator + fileName + ".png");
+    public static Bitmap checkInternalStorage(String filePath) {
+        File imgFile = new File(filePath);
         if (imgFile.exists()) {
             return BitmapFactory.decodeFile(imgFile.getAbsolutePath());
         } else {
@@ -89,11 +89,11 @@ public class Content {
         }
     }
 
-    private static void loadToInternalStorage(String fileName, Bitmap picture) {
-        File imgFile = new File(Constants.PATH_FOR_LOADED_FILES + File.separator + fileName + ".png");
+    public static void loadToInternalStorage(String filePath, Bitmap picture) {
+        File imgFile = new File(filePath);
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            picture.compress(Bitmap.CompressFormat.PNG, 50, stream);
+            picture.compress(Bitmap.CompressFormat.JPEG, 50, stream);
 
             FileOutputStream outputStream = new FileOutputStream(imgFile, false);
             outputStream.write(stream.toByteArray());
@@ -103,32 +103,12 @@ public class Content {
         }
     }
 
-    public static Bitmap getPicture(String id, String sizeH, String sizeW) {
-        String fileName = id + "h" + sizeH + "w" + sizeW;
-        if(lruCache.get(fileName) == null) {
-            Bitmap image = checkInternalStorage(fileName);
-            if(image == null) {
-                image = loadImage(ITEM_MAP.get(id).imageInformation.urls.raw + "&h=" + sizeH);
-                if (image != null && sizeH.equals(Constants.SMALL_IMAGE_H.toString())) {
-                    lruCache.put(fileName, image);
-                }
-                loadToInternalStorage(fileName, image);
-                return image;
-            } else {
-                return image;
-            }
-        } else {
-            return lruCache.get(fileName);
-        }
-    }
-
-    /**
-     * A item representing a piece of content.
-     */
     public static class Item {
         public final String content;
         public final String details;
         public final ImageInformation imageInformation;
+        public String bigPicturePath = null;
+        public String smallPicturePath = null;
 
         private String calculateFineColor() {
             int color = Color.parseColor(imageInformation.color);
