@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -66,14 +65,16 @@ public class ItemListActivity extends AppCompatActivity {
     }
 
     public static void addNewRecyclerItem(Content.Item item) {
-        Content.addItem(item);
-        ((Activity)context).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mSimpleItemRecyclerViewAdapter.notifyItemInserted(Content.ITEMS.size() - 1);
-                mLoading = false;
-            }
-        });
+        synchronized (Content.ITEMS) {
+            Content.addItem(item);
+            ((Activity) context).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mSimpleItemRecyclerViewAdapter.notifyItemChanged(Content.ITEMS.size() - 1);
+                    mLoading = false;
+                }
+            });
+        }
     }
 
     private void setupRecyclerScrollListener(@NonNull RecyclerView recyclerView) {
@@ -140,7 +141,7 @@ public class ItemListActivity extends AppCompatActivity {
         }).start();
     }
 
-    public static class SimpleItemRecyclerViewAdapter
+    public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final ItemListActivity mParentActivity;
@@ -188,7 +189,6 @@ public class ItemListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.setIsRecyclable(false);
             final Content.Item item = Content.ITEMS.get(position);
 
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));

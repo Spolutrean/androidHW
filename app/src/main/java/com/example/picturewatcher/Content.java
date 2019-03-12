@@ -107,7 +107,6 @@ public class Content {
         public final String content;
         public final String details;
         public final ImageInformation imageInformation;
-        public String bigPicturePath = null;
         public String smallPicturePath = null;
 
         private String calculateFineColor() {
