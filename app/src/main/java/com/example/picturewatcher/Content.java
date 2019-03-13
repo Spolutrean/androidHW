@@ -54,12 +54,14 @@ public class Content {
     }
 
     private static String makeDetails(ImageInformation info) {
-        //create more cool description in HW4 and later
-        if(info.description != null) {
-            return info.description;
-        } else {
-            return "Empty description";
+        String ret = "";
+        if(info.user.name != null) {
+            ret += info.user.name + "\n";
         }
+        if(info.description != null) {
+            ret += info.description;
+        }
+        return ret;
     }
 
     public static Bitmap loadImage(String link) {

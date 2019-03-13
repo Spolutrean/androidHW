@@ -1,7 +1,7 @@
 package com.example.picturewatcher;
 
 public final class Constants {
-    public static final Integer ITEMS_PER_PAGE = 25;
+    public static final Integer ITEMS_PER_PAGE = 10;
 
     public static final String
             ACCESS_KEY = "c65614934e9e6928ddf4baaf55cefa6dd50375640bcd607a3660147c0179af10",

@@ -15,13 +15,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -31,7 +32,8 @@ public class ItemListActivity extends AppCompatActivity {
     private boolean mTwoPane = false;
 
     private static boolean mLoading = false;
-    private int mPastVisiblesItems, mVisibleItemCount, mTotalItemCount;
+    private Integer mPastVisiblesItems, mVisibleItemCount, mTotalItemCount, mPageNumForLoading = 1;
+    private String mSearchText = "";
     private LinearLayoutManager mLayoutManager;
     private static SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
     private static Context context;
@@ -55,8 +57,23 @@ public class ItemListActivity extends AppCompatActivity {
         setupRecyclerView((RecyclerView) recyclerView);
         setupRecyclerScrollListener((RecyclerView) recyclerView);
 
+        setupClickListenerOnToolbarSearchButton();
 
         createAndAddNewItems(Constants.ITEMS_PER_PAGE);
+    }
+
+    private void setupClickListenerOnToolbarSearchButton() {
+        findViewById(R.id.searchButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSearchText = ((EditText) findViewById(R.id.searchText)).getText().toString();
+                Content.ITEMS.clear();
+                Content.ITEM_MAP.clear();
+                mPageNumForLoading = 1;
+                mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
+                createAndAddNewItems(Constants.ITEMS_PER_PAGE);
+            }
+        });
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -84,8 +101,7 @@ public class ItemListActivity extends AppCompatActivity {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                //check for scroll down
-                if(dy > 0) {
+                if (dy > 0) {
                     mVisibleItemCount = mLayoutManager.getChildCount();
                     mTotalItemCount = mLayoutManager.getItemCount();
                     mPastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
@@ -111,18 +127,32 @@ public class ItemListActivity extends AppCompatActivity {
 
     private void createAndAddNewItems(Integer count) {
 
-        final String apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
-                "?client_id=" + Constants.ACCESS_KEY +
-                "&count=" + count.toString();
+        final String apiLink;
+
+        if (mSearchText.length() != 0) {
+            apiLink = Constants.UNSPLASH_API_URL + "/search/photos" +
+                    "?client_id=" + Constants.ACCESS_KEY +
+                    "&per_page=" + count.toString() +
+                    "&query=" + mSearchText +
+                    "&page=" + mPageNumForLoading.toString();
+            mPageNumForLoading++;
+        } else {
+            apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
+                    "?client_id=" + Constants.ACCESS_KEY +
+                    "&count=" + count.toString();
+        }
 
         new Thread(new UriLoadRunnable(apiLink) {
             @Override
             public void run() {
                 try {
                     ObjectMapper mapper = new ObjectMapper();
-                    List<ImageInformation> items = mapper.readValue(
-                            new URL(link),
-                            new TypeReference<List<ImageInformation>>(){});
+                    List<ImageInformation> items;
+                    if(mSearchText.length() != 0) {
+                        items = getSearchedPhotosList(apiLink);
+                    } else {
+                        items = getRandomPhotosList(apiLink);
+                    }
 
                     DownloadImageService.startLoading(getApplicationContext(), items);
 
@@ -132,6 +162,22 @@ public class ItemListActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    private static List<ImageInformation> getRandomPhotosList(String url) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                new URL(url),
+                new TypeReference<List<ImageInformation>>() {
+                });
+    }
+
+    private static List<ImageInformation> getSearchedPhotosList(String url) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                new URL(url),
+                SearchImageInformation.class).results;
+    }
+
 
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
@@ -186,7 +232,7 @@ public class ItemListActivity extends AppCompatActivity {
             holder.mItemLayout.setBackgroundColor(Color.parseColor(item.imageInformation.color));
             holder.mContentImageView.setImageBitmap(Bitmap.createBitmap(500, 500, Bitmap.Config.RGB_565));
 
-            if(Content.lruCache.get(item.imageInformation.id) != null) {
+            if (Content.lruCache.get(item.imageInformation.id) != null) {
                 holder.mContentImageView.setImageBitmap(Content.lruCache.get(item.imageInformation.id));
             } else {
                 ex.submit(new Runnable() {
