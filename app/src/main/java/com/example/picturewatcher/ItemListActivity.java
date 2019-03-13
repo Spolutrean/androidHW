@@ -109,14 +109,6 @@ public class ItemListActivity extends AppCompatActivity {
         }
     }
 
-    private abstract  class RunnableWithItem implements  Runnable {
-        public ImageInformation item;
-
-        public RunnableWithItem(ImageInformation item) {
-            this.item = item;
-        }
-    }
-
     private void createAndAddNewItems(Integer count) {
 
         final String apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +

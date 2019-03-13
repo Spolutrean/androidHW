@@ -53,15 +53,8 @@ public class Content {
         return new Item(info);
     }
 
-    private static String makeContent(ImageInformation info) {
-        if(info.description != null) {
-            return info.description;
-        } else {
-            return "Empty description";
-        }
-    }
-
     private static String makeDetails(ImageInformation info) {
+        //create more cool description in HW4 and later
         if(info.description != null) {
             return info.description;
         } else {
@@ -104,7 +97,6 @@ public class Content {
     }
 
     public static class Item {
-        public final String content;
         public final String details;
         public final ImageInformation imageInformation;
         public String smallPicturePath = null;
@@ -119,7 +111,6 @@ public class Content {
         }
 
         public Item(ImageInformation imageInformation) {
-            this.content = makeContent(imageInformation);
             this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
             this.imageInformation.color = calculateFineColor();
@@ -127,7 +118,7 @@ public class Content {
 
         @Override
         public String toString() {
-            return content;
+            return details;
         }
     }
 }
