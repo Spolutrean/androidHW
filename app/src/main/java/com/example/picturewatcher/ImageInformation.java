@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class ImageInformation implements Serializable {
+public class ImageInformation implements Serializable {
     public String id;
     public String description;
     public String color;

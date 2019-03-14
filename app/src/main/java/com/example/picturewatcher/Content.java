@@ -101,7 +101,8 @@ public class Content {
     public static class Item {
         public final String details;
         public final ImageInformation imageInformation;
-        public String smallPicturePath = null;
+        public String smallPicturePath = null,
+                        bigPicturePath = null;
 
         private String calculateFineColor() {
             int color = Color.parseColor(imageInformation.color);

@@ -28,7 +28,7 @@
 
                 <EditText
                     android:id="@+id/searchText"
-                    android:layout_weight="0.8"
+                    android:layout_weight="0.6"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -44,6 +44,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:src="@drawable/search" />
+
+                <ImageButton
+                    android:id="@+id/likesViewButton"
+                    android:layout_weight="0.2"
+                    android:tint="@android:color/holo_red_light"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/like_unfilled" />
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
 

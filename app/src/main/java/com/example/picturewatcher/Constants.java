@@ -8,5 +8,5 @@ public final class Constants {
             SECRET_KEY = "3d898acee6b7e3d3f142bd00d28f4f50659daf83de72c54e1c21fb1a0eaf6bc1";
     public static final String UNSPLASH_API_URL = "https://api.unsplash.com/";
     public static final String LOG_TAG = "PictureWatcher";
-    public static String PATH_FOR_LOADED_FILES = "/data/data/com.example.picturewatcher/files/";
+    public static String PATH_FOR_LOADED_FILES = "";
 }
