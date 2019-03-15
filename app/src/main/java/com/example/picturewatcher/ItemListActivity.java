@@ -14,10 +14,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.example.picturewatcher.Database.LocalDatabaseAPI;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,6 +36,7 @@ public class ItemListActivity extends AppCompatActivity {
     private LinearLayoutManager mLayoutManager;
     private static SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
     private static Context context;
+    public static LocalDatabaseAPI api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +44,12 @@ public class ItemListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item_list);
         context = this;
         Constants.PATH_FOR_LOADED_FILES = getFilesDir().getParent() + "/app_loaded_images/";
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        api = new LocalDatabaseAPI(context);
 
         if (findViewById(R.id.item_detail_container_horizontal) != null) {
             mTwoPane = true;
@@ -65,14 +70,16 @@ public class ItemListActivity extends AppCompatActivity {
         findViewById(R.id.likesViewButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mInGalery) {
+                if (mInGalery) {
                     mInGalery = false;
                 } else {
                     mInGalery = true;
-                    Content.ITEMS.clear();
-                    Content.ITEM_MAP.clear();
-                    createAndAddNewItems(Constants.ITEMS_PER_PAGE);
+                    mPageNumForLoading = 1;
                 }
+                Content.ITEMS.clear();
+                Content.ITEM_MAP.clear();
+                mSimpleItemRecyclerViewAdapter.notifyDataSetChanged();
+                createAndAddNewItems(Constants.ITEMS_PER_PAGE);
             }
         });
     }
@@ -132,50 +139,35 @@ public class ItemListActivity extends AppCompatActivity {
         });
     }
 
-    private abstract class UriLoadRunnable implements Runnable {
-        public String link;
-
-        public UriLoadRunnable(String link) {
-            this.link = link;
-        }
-    }
-
     private void createAndAddNewItems(Integer count) {
-
-
-        if (mInGalery) {
-            //
-        } else {
-            final String apiLink;
-            if (mSearchText.length() != 0) {
-                apiLink = Constants.UNSPLASH_API_URL + "/search/photos" +
-                        "?client_id=" + Constants.ACCESS_KEY +
-                        "&per_page=" + count.toString() +
-                        "&query=" + mSearchText +
-                        "&page=" + mPageNumForLoading.toString();
-                mPageNumForLoading++;
-            } else {
-                apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
-                        "?client_id=" + Constants.ACCESS_KEY +
-                        "&count=" + count.toString();
-            }
-            new Thread(new UriLoadRunnable(apiLink) {
-                @Override
-                public void run() {
-                    try {
-                        List<ImageInformation> items;
-                        if(mSearchText.length() == 0) {
-                            items = getRandomPhotosList(apiLink);
-                        } else {
-                            items = getSearchedPhotosList(apiLink);
-                        }
-                        DownloadImageService.startLoading(getApplicationContext(), items);
-                    } catch (Exception e) {
-                        Log.e(Constants.LOG_TAG, e.toString());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<ImageInformation> items;
+                    if(mInGalery) {
+                        items = api.getFavouritesFromDatabase(mPageNumForLoading);
+                        mPageNumForLoading++;
+                    } else if (mSearchText.length() != 0) {
+                        String apiLink = Constants.UNSPLASH_API_URL + "/search/photos" +
+                                "?client_id=" + Constants.ACCESS_KEY +
+                                "&per_page=" + count.toString() +
+                                "&query=" + mSearchText +
+                                "&page=" + mPageNumForLoading.toString();
+                        mPageNumForLoading++;
+                        items = getSearchedPhotosList(apiLink);
+                    } else {
+                        String apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
+                                "?client_id=" + Constants.ACCESS_KEY +
+                                "&count=" + count.toString();
+                        items = getRandomPhotosList(apiLink);
                     }
+                    DownloadImageService.startLoading(getApplicationContext(), items);
+                } catch (Exception e) {
+                    Log.e(Constants.LOG_TAG, e.toString());
                 }
-            }).start();
-        }
+            }
+        }).start();
     }
 
     private static List<ImageInformation> getRandomPhotosList(String url) throws Exception {

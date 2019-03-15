@@ -100,6 +100,7 @@ public class Content {
 
     public static class Item {
         public final String details;
+        public Boolean liked = false;
         public final ImageInformation imageInformation;
         public String smallPicturePath = null,
                         bigPicturePath = null;
@@ -117,6 +118,11 @@ public class Content {
             this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
             this.imageInformation.color = calculateFineColor();
+            this.liked = isLiked();
+        }
+
+        private Boolean isLiked() {
+            return ItemListActivity.api.isImageExistInDatabase(imageInformation);
         }
 
         @Override
