@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.textclassifier.TextLinks;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,10 +24,16 @@ import com.example.picturewatcher.Database.LocalDatabaseAPI;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ItemListActivity extends AppCompatActivity {
     private boolean mTwoPane = false;
@@ -145,22 +152,24 @@ public class ItemListActivity extends AppCompatActivity {
             public void run() {
                 try {
                     List<ImageInformation> items;
-                    if(mInGalery) {
+                    if (mInGalery) {
                         items = api.getFavouritesFromDatabase(mPageNumForLoading);
                         mPageNumForLoading++;
                     } else if (mSearchText.length() != 0) {
-                        String apiLink = Constants.UNSPLASH_API_URL + "/search/photos" +
-                                "?client_id=" + Constants.ACCESS_KEY +
-                                "&per_page=" + count.toString() +
-                                "&query=" + mSearchText +
-                                "&page=" + mPageNumForLoading.toString();
+                        final HttpUrl.Builder urlBuilder =
+                                HttpUrl.parse(Constants.UNSPLASH_API_URL + "search/photos").newBuilder();
+                        urlBuilder.addQueryParameter("client_id", Constants.ACCESS_KEY);
+                        urlBuilder.addQueryParameter("per_page", count.toString());
+                        urlBuilder.addQueryParameter("query", mSearchText);
+                        urlBuilder.addQueryParameter("page", mPageNumForLoading.toString());
                         mPageNumForLoading++;
-                        items = getSearchedPhotosList(apiLink);
+                        items = getSearchedPhotosList(urlBuilder.build());
                     } else {
-                        String apiLink = Constants.UNSPLASH_API_URL + "/photos/random" +
-                                "?client_id=" + Constants.ACCESS_KEY +
-                                "&count=" + count.toString();
-                        items = getRandomPhotosList(apiLink);
+                        final HttpUrl.Builder urlBuilder =
+                                HttpUrl.parse(Constants.UNSPLASH_API_URL + "photos/random").newBuilder();
+                        urlBuilder.addQueryParameter("client_id", Constants.ACCESS_KEY);
+                        urlBuilder.addQueryParameter("count", count.toString());
+                        items = getRandomPhotosList(urlBuilder.build());
                     }
                     DownloadImageService.startLoading(getApplicationContext(), items);
                 } catch (Exception e) {
@@ -170,18 +179,35 @@ public class ItemListActivity extends AppCompatActivity {
         }).start();
     }
 
-    private static List<ImageInformation> getRandomPhotosList(String url) throws Exception {
+    private static String getJsonFromServer(HttpUrl url) throws IOException {
+        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        OkHttpClient client = builder.build();
+        final Request request = new Request.Builder().url(url).build();
+        Response response = client.newCall(request).execute();
+        String json = response.body().string();
+        if (response.code() != 200) {
+            throw new IllegalStateException(json);
+        }
+        if (json == null) {
+            throw new IllegalStateException("API error");
+        }
+        return json;
+    }
+
+    private static List<ImageInformation> getRandomPhotosList(HttpUrl url) throws Exception {
+        String json = getJsonFromServer(url);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
-                new URL(url),
+                json,
                 new TypeReference<List<ImageInformation>>() {
                 });
     }
 
-    private static List<ImageInformation> getSearchedPhotosList(String url) throws Exception {
+    private static List<ImageInformation> getSearchedPhotosList(HttpUrl url) throws Exception {
+        String json = getJsonFromServer(url);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
-                new URL(url),
+                json,
                 SearchImageInformation.class).results;
     }
 
