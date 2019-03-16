@@ -53,20 +53,15 @@ public class Content {
         return new Item(info);
     }
 
-    private static String makeContent(ImageInformation info) {
-        if(info.description != null) {
-            return info.description;
-        } else {
-            return "Empty description";
-        }
-    }
-
     private static String makeDetails(ImageInformation info) {
-        if(info.description != null) {
-            return info.description;
-        } else {
-            return "Empty description";
+        String ret = "";
+        if (info.user.name != null) {
+            ret += info.user.name + "\n";
         }
+        if (info.description != null) {
+            ret += info.description;
+        }
+        return ret;
     }
 
     public static Bitmap loadImage(String link) {
@@ -81,6 +76,9 @@ public class Content {
     }
 
     public static Bitmap checkInternalStorage(String filePath) {
+        if(filePath == null) {
+            return null;
+        }
         File imgFile = new File(filePath);
         if (imgFile.exists()) {
             return BitmapFactory.decodeFile(imgFile.getAbsolutePath());
@@ -104,30 +102,35 @@ public class Content {
     }
 
     public static class Item {
-        public final String content;
         public final String details;
+        public Boolean liked;
         public final ImageInformation imageInformation;
-        public String smallPicturePath = null;
+        public String smallPicturePath = null,
+                bigPicturePath = null;
 
         private String calculateFineColor() {
             int color = Color.parseColor(imageInformation.color);
             int r = ((color >> 16) & 0xff);
-            int g = ((color >>  8) & 0xff);
-            int b = ((color      ) & 0xff);
+            int g = ((color >> 8) & 0xff);
+            int b = ((color) & 0xff);
 
             return String.format("#%02x%02x%02x%02x", 128, r, g, b);
         }
 
         public Item(ImageInformation imageInformation) {
-            this.content = makeContent(imageInformation);
             this.details = makeDetails(imageInformation);
             this.imageInformation = imageInformation;
             this.imageInformation.color = calculateFineColor();
+            this.liked = isLiked();
+        }
+
+        private Boolean isLiked() {
+            return ItemListActivity.api.isImageExistInDatabase(imageInformation);
         }
 
         @Override
         public String toString() {
-            return content;
+            return details;
         }
     }
 }
