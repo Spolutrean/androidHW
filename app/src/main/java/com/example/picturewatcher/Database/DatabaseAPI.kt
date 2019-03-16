@@ -16,7 +16,7 @@ import org.jetbrains.anko.db.insertOrThrow
  *
  * @param context parent context
  */
-public class LocalDatabaseAPI(private val context: Context) {
+public class DatabaseAPI(private val context: Context) {
 
     /**
      * @param image image to remove in database
@@ -86,43 +86,6 @@ public class LocalDatabaseAPI(private val context: Context) {
             } while (cursor.moveToNext())
 
             return@use images
-        }
-    }
-
-    /**
-     * Get all images count from database
-     *
-     * @return images count from database in Table [Images.NAME]
-     */
-    fun getImagesCount(): Int {
-        return GalleryDatabase.getInstance(context).use {
-            val cursor = query(Favourites.NAME,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null)
-
-            cursor.count
-        }
-    }
-
-
-    /**
-     * Insert images in database
-     *
-     * @param images images list to add to the database
-     */
-    fun insertImagesInDatabase(images: List<ImageInformation>) {
-        val mapper = ObjectMapper()
-
-        GalleryDatabase.getInstance(context).use {
-            for (image in images) {
-                insertOrThrow(Favourites.NAME,
-                        Favourites.FIELDS.ID to image.id,
-                        Favourites.FIELDS.SERIALIZED_IMAGE to mapper.writeValueAsString(image))
-            }
         }
     }
 

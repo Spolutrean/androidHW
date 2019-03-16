@@ -50,13 +50,13 @@ public class ItemDetailFragment extends Fragment {
             public boolean onLongClick(View v) {
                 if (item.liked) {
                     showFavoriteAnimation(R.drawable.like_broken);
-                    if(ItemListActivity.api.isImageExistInDatabase(item.imageInformation)) {
+                    if (ItemListActivity.api.isImageExistInDatabase(item.imageInformation)) {
                         ItemListActivity.api.removeImageFromDatabase(item.imageInformation);
                     }
                     item.liked = false;
                 } else {
                     showFavoriteAnimation(R.drawable.like_filled);
-                    if(!ItemListActivity.api.isImageExistInDatabase(item.imageInformation)) {
+                    if (!ItemListActivity.api.isImageExistInDatabase(item.imageInformation)) {
                         ItemListActivity.api.insertImageInDatabase(item.imageInformation);
                     }
                     item.liked = true;
@@ -75,7 +75,7 @@ public class ItemDetailFragment extends Fragment {
         view.getLayoutParams().height = 400;
         view.getLayoutParams().width = 400;
 
-        ((RelativeLayout)rootView.findViewById(R.id.relativeDetailLayout)).addView(view);
+        ((RelativeLayout) rootView.findViewById(R.id.relativeDetailLayout)).addView(view);
 
         Animation fadeInAnimation = AnimationUtils.loadAnimation(context,
                 R.anim.set_like_unlike);
@@ -93,7 +93,7 @@ public class ItemDetailFragment extends Fragment {
             setupOnLongClickImageListener(mItem, imageView);
             mItem.bigPicturePath = PATH_FOR_LOADED_FILES + "big" + mItem.imageInformation.id + ".jpg";
 
-            if(new File(mItem.bigPicturePath).exists()) {
+            if (new File(mItem.bigPicturePath).exists()) {
                 imageView.setImageBitmap(Content.checkInternalStorage(mItem.bigPicturePath));
             } else {
                 Glide.with(context)

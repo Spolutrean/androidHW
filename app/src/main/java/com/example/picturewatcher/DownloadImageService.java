@@ -46,11 +46,10 @@ public class DownloadImageService extends IntentService {
             String path = PATH_FOR_LOADED_FILES + "small" + imageInformation.id + ".jpg";
             File file = new File(path);
             File dir = new File(PATH_FOR_LOADED_FILES);
-            if(!dir.exists())
-            {
-               dir.mkdirs();
+            if (!dir.exists()) {
+                dir.mkdirs();
             }
-            if(!file.exists()) {
+            if (!file.exists()) {
                 String url = imageInformation.urls.small;
                 Bitmap bitmap = Content.loadImage(url);
                 Content.loadToInternalStorage(file.getAbsolutePath(), bitmap);

@@ -55,10 +55,10 @@ public class Content {
 
     private static String makeDetails(ImageInformation info) {
         String ret = "";
-        if(info.user.name != null) {
+        if (info.user.name != null) {
             ret += info.user.name + "\n";
         }
-        if(info.description != null) {
+        if (info.description != null) {
             ret += info.description;
         }
         return ret;
@@ -100,16 +100,16 @@ public class Content {
 
     public static class Item {
         public final String details;
-        public Boolean liked = false;
+        public Boolean liked;
         public final ImageInformation imageInformation;
         public String smallPicturePath = null,
-                        bigPicturePath = null;
+                bigPicturePath = null;
 
         private String calculateFineColor() {
             int color = Color.parseColor(imageInformation.color);
             int r = ((color >> 16) & 0xff);
-            int g = ((color >>  8) & 0xff);
-            int b = ((color      ) & 0xff);
+            int g = ((color >> 8) & 0xff);
+            int b = ((color) & 0xff);
 
             return String.format("#%02x%02x%02x%02x", 128, r, g, b);
         }

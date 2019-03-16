@@ -15,17 +15,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.textclassifier.TextLinks;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.example.picturewatcher.Database.LocalDatabaseAPI;
+import com.example.picturewatcher.Database.DatabaseAPI;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -43,7 +41,7 @@ public class ItemListActivity extends AppCompatActivity {
     private LinearLayoutManager mLayoutManager;
     private static SimpleItemRecyclerViewAdapter mSimpleItemRecyclerViewAdapter;
     private static Context context;
-    public static LocalDatabaseAPI api;
+    public static DatabaseAPI api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +54,7 @@ public class ItemListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
-        api = new LocalDatabaseAPI(context);
+        api = new DatabaseAPI(context);
 
         if (findViewById(R.id.item_detail_container_horizontal) != null) {
             mTwoPane = true;

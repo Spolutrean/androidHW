@@ -1,4 +1,5 @@
 package com.example.picturewatcher;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
@@ -11,7 +12,8 @@ public class ImageInformation implements Serializable {
     public Urls urls;
     public User user;
 
-    public ImageInformation() { }
+    public ImageInformation() {
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class Urls implements Serializable {
