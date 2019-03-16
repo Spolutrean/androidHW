@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Picture Watcher</string>
     <string name="title_item_detail">Extra information</string>
-    <string name="writeRequestText">Write request or look at random photos</string>
+    <string name="writeRequestText">Find or look random photos</string>
 </resources>

@@ -41,6 +41,9 @@ dependencies {
     implementation "org.jetbrains.anko:anko-sqlite:$anko_version"
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 repositories {
     mavenCentral()

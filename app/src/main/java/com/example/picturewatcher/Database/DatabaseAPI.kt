@@ -3,10 +3,14 @@ package com.example.picturewatcher.Database
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteException
+import android.provider.Settings
 import com.example.picturewatcher.Constants
 import com.example.picturewatcher.Database.Tables.Favourites
 import com.example.picturewatcher.ImageInformation
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.db.delete
 import org.jetbrains.anko.db.insertOrThrow
 
@@ -94,13 +98,15 @@ public class DatabaseAPI(private val context: Context) {
      *
      * @param image imageData to add to the database
      */
-    fun insertImageInDatabase(image: ImageInformation): Long {
+    fun insertImageInDatabase(image: ImageInformation) {
         val mapper = ObjectMapper()
 
-        return GalleryDatabase.getInstance(context).use {
-            return@use insertOrThrow(Favourites.NAME,
-                    Favourites.FIELDS.ID to image.id,
-                    Favourites.FIELDS.SERIALIZED_IMAGE to mapper.writeValueAsString(image))
+        GlobalScope.launch(Dispatchers.IO) {
+            GalleryDatabase.getInstance(context).use {
+                insertOrThrow(Favourites.NAME,
+                        Favourites.FIELDS.ID to image.id,
+                        Favourites.FIELDS.SERIALIZED_IMAGE to mapper.writeValueAsString(image))
+            }
         }
     }
 
