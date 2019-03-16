@@ -76,6 +76,9 @@ public class Content {
     }
 
     public static Bitmap checkInternalStorage(String filePath) {
+        if(filePath == null) {
+            return null;
+        }
         File imgFile = new File(filePath);
         if (imgFile.exists()) {
             return BitmapFactory.decodeFile(imgFile.getAbsolutePath());
